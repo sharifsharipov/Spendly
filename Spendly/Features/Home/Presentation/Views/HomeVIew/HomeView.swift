@@ -1,106 +1,86 @@
 import SwiftUI
 
 struct HomeView: View {
-
     @Environment(\.textStyles) var ts
-    @Environment(\.colorScheme) var colorScheme
-    @State private var toast: ToastMessage?
+    @Environment(AppRouter.self) private var router
+    @State private var selectedCategory: TransactionCategory = .all
+    @State private var showAddTransaction = false
+    @State private var vm = HomeViewModel()
 
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-
-                // MARK: - 1. Text styles
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Poppins 24 Bold")
-                        .textStyle(ts.poppins24w700)
-
-                    Text("Manrope 18 SemiBold")
-                        .textStyle(ts.manrope18w600)
-
-                    Text("Manrope 16 Medium")
-                        .textStyle(ts.manrope16w500)
-
-                    Text("Manrope 14 Regular")
-                        .textStyle(ts.manrope14w400)
-
-                    Text("Manrope 12 Grey")
-                        .textStyle(ts.manrope12w400grey)
-
-                    Text("Primary color text")
-                        .textStyle(ts.manrope14w500primary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding()
-                .background(AppColors.surfaceContainerHighest, in: RoundedRectangle(cornerRadius: 12))
-
-                // MARK: - 2. Colors
-                VStack(spacing: 8) {
-                    colorRow("primary",    AppColors.primary)
-                    colorRow("secondary",  AppColors.secondary)
-                    colorRow("success",    AppColors.success)
-                    colorRow("error",      AppColors.error)
-                    colorRow("warning",    AppColors.warning)
-                    colorRow("surface",    AppColors.surface)
-                    colorRow("outline",    AppColors.outline)
-                }
-                .padding()
-                .background(AppColors.surfaceContainerHighest, in: RoundedRectangle(cornerRadius: 12))
-
-                // MARK: - 3. Toast
-                VStack(spacing: 12) {
-                    Button("Show Success") {
-                        toast = ToastMessage(message: "Muvaffaqiyatli saqlandi!", type: .success)
-                    }
-                    .foregroundStyle(AppColors.success)
-
-                    Button("Show Error") {
-                        toast = ToastMessage(message: "Xatolik yuz berdi!", type: .failure)
-                    }
-                    .foregroundStyle(AppColors.error)
-
-                    Button("Show Info") {
-                        toast = ToastMessage(message: "Ma'lumot yangilandi", type: .info)
-                    }
-                    .foregroundStyle(AppColors.secondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(AppColors.surfaceContainerHighest, in: RoundedRectangle(cornerRadius: 12))
-
-                // MARK: - 4. isDarkMode
-                HStack {
-                    Text(colorScheme == .dark ? "Dark mode" : "Light mode")
-                        .textStyle(ts.manrope14w400)
-                    Spacer()
-                    Image(systemName: colorScheme == .dark ? "moon.fill" : "sun.max.fill")
-                        .foregroundStyle(AppColors.primary)
-                }
-                .padding()
-                .background(AppColors.surfaceContainerHighest, in: RoundedRectangle(cornerRadius: 12))
-            }
-            .padding()
+    private var filteredTransactions: [Transaction] {
+        let sorted = vm.transactions.sorted { $0.date > $1.date }
+        switch selectedCategory {
+        case .all:       return Array(sorted.prefix(5))
+        case .income:    return sorted.filter { $0.type == .income }
+        case .expense:   return sorted.filter { $0.type == .expense }
+        case .food:      return sorted.filter { $0.category == .food }
+        case .transport: return sorted.filter { $0.category == .transport }
+        case .shopping:  return sorted.filter { $0.category == .shopping }
+        case .health:    return sorted.filter { $0.category == .health }
         }
-        .background(AppColors.background)
-        .navigationTitle("Examples")
-        .toast($toast)
     }
 
-    private func colorRow(_ name: String, _ color: Color) -> some View {
-        HStack {
-            RoundedRectangle(cornerRadius: 6)
-                .fill(color)
-                .frame(width: 32, height: 32)
-            Text(name)
-                .textStyle(ts.manrope14w400)
-            Spacer()
+    var body: some View {
+        VStack(spacing: 0) {
+            HomeCategoryFilter(selected: $selectedCategory)
+
+            if filteredTransactions.isEmpty {
+                Spacer()
+                emptyState
+                Spacer()
+            } else {
+                ScrollView {
+                    VStack(spacing: 12) {
+                        HStack {
+                            Text(selectedCategory == .all ? "Recent Transactions" : selectedCategory.rawValue)
+                                .textStyle(ts.manrope18w600)
+                            Spacer()
+                            if selectedCategory == .all && vm.transactions.count > 5 {
+                                Button("See all") {}
+                                    .textStyle(ts.manrope14w500primary)
+                            }
+                        }
+
+                        ForEach(filteredTransactions) { tx in
+                            Button {
+                                router.push(.transactionDetail(tx))
+                            } label: {
+                                TransactionRowView(transaction: tx)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding()
+                }
+            }
         }
+        .background(AppColors.background)
+        .navigationTitle("Spendly")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar { HomeToolbar(onAdd: { showAddTransaction = true }) }
+        .toolbarBackground(AppColors.surface, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .sheet(isPresented: $showAddTransaction) {
+            AddTransactionView { tx in
+                vm.add(tx)
+            }
+        }
+        .onAppear { vm.load() }
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "tray")
+                .font(.system(size: 40))
+                .foregroundStyle(AppColors.grey73)
+            Text("No transactions yet")
+                .textStyle(ts.manrope14w400)
+                .foregroundStyle(AppColors.grey73)
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 
 #Preview {
-    NavigationStack {
-        HomeView()
-    }
-    .injectTextStyles()
+    ContentView()
 }

@@ -3,37 +3,45 @@ import Observation
 
 @Observable
 final class GoalsViewModel {
-
     var goals: [Goal] = []
 
-    var activeGoals: [Goal] {
-        goals.filter { !$0.isCompleted }
+    private let fetchGoals:  FetchGoalsUseCase
+    private let addGoal:     AddGoalUseCase
+    private let deleteGoal:  DeleteGoalUseCase
+    private let updateGoal:  UpdateGoalUseCase
+
+    init(repository: GoalRepository = GoalRepositoryImpl()) {
+        fetchGoals  = FetchGoalsUseCase(repository: repository)
+        addGoal     = AddGoalUseCase(repository: repository)
+        deleteGoal  = DeleteGoalUseCase(repository: repository)
+        updateGoal  = UpdateGoalUseCase(repository: repository)
     }
 
-    var completedGoals: [Goal] {
-        goals.filter { $0.isCompleted }
+    var activeGoals: [Goal]    { goals.filter { !$0.isCompleted } }
+    var completedGoals: [Goal] { goals.filter { $0.isCompleted } }
+    var totalSaved: Double     { goals.reduce(0) { $0 + $1.currentAmount } }
+    var totalTarget: Double    { goals.reduce(0) { $0 + $1.targetAmount } }
+
+    func load() {
+        goals = fetchGoals.execute()
     }
 
-    var totalSaved: Double {
-        goals.reduce(0) { $0 + $1.currentAmount }
-    }
-
-    var totalTarget: Double {
-        goals.reduce(0) { $0 + $1.targetAmount }
+    func add(_ goal: Goal) {
+        addGoal.execute(goal)
+        goals.append(goal)
     }
 
     func delete(_ goal: Goal) {
+        deleteGoal.execute(id: goal.id)
         goals.removeAll { $0.id == goal.id }
-        // TODO: Persist deletion
     }
 
     func addAmount(_ amount: Double, to goal: Goal) {
-        guard let index = goals.firstIndex(where: { $0.id == goal.id }) else { return }
-        goals[index].currentAmount = min(goals[index].currentAmount + amount, goals[index].targetAmount)
-        // TODO: Persist update
-    }
-
-    func load() {
-        // TODO: Load from persistence
+        var updated = goal
+        updated.currentAmount = min(goal.currentAmount + amount, goal.targetAmount)
+        updateGoal.execute(updated)
+        if let i = goals.firstIndex(where: { $0.id == goal.id }) {
+            goals[i] = updated
+        }
     }
 }

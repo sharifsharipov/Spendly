@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 // Shared model — used across Home and Statistics features
 
@@ -33,9 +34,25 @@ enum Category: String, Codable, CaseIterable, Identifiable {
         case .other:         return "ellipsis.circle.fill"
         }
     }
+
+    var color: Color {
+        switch self {
+        case .food:          return Color(hex: "FF6B35")
+        case .transport:     return Color(hex: "1B93FE")
+        case .shopping:      return Color(hex: "7E5FA6")
+        case .entertainment: return Color(hex: "DD1470")
+        case .health:        return Color(hex: "0CB867")
+        case .housing:       return Color(hex: "00B4D8")
+        case .salary:        return Color(hex: "0CB867")
+        case .savings:       return Color(hex: "3A86FF")
+        case .other:         return Color(hex: "909090")
+        }
+    }
 }
 
-struct Transaction: Identifiable, Codable {
+struct Transaction: Identifiable, Codable, Hashable {
+    static func == (lhs: Transaction, rhs: Transaction) -> Bool { lhs.id == rhs.id }
+    func hash(into hasher: inout Hasher) { hasher.combine(id) }
     var id: UUID
     var title: String
     var amount: Double

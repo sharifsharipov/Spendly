@@ -2,7 +2,7 @@ import Foundation
 
 enum Route: Hashable {
     // Home
-    case transactionDetail
+    case transactionDetail(Transaction)
     case addTransaction
 
     // Goals

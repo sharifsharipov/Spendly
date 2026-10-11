@@ -32,7 +32,7 @@ struct ContentView: View {
                 HomeView()
                     .navigationDestination(for: Route.self) { route in
                         switch route {
-                        case .transactionDetail: TransactionDetailView()
+                        case .transactionDetail(let tx): TransactionDetailView(transaction: tx)
                         case .addTransaction:    AddTransactionView()
                         case .goalDetail:        GoalDetailView()
                         case .addGoal:           AddGoalView()
@@ -77,4 +77,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .injectTextStyles()
 }
