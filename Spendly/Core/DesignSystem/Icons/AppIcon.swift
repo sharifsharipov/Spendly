@@ -7,11 +7,12 @@
 
 import SwiftUI
 
-enum AppIcon: String {
+enum AppIcons: String {
     case home       = "Icons/home"
     case goals      = "Icons/goals"
     case statistics = "Icons/statistics"
     case profile    = "Icons/profile"
     case language   = "Icons/language"
     case theme      = "Icons/theme"
+    case idea       = "Icons/idea"
 }
