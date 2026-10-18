@@ -27,7 +27,7 @@ struct HomeCategoryFilter: View {
                     } label: {
                         Text(category.rawValue)
                             .font(.custom("Manrope-Medium", size: 13))
-                            .foregroundStyle(selected == category ? Color(hex: "1A1A1A") : AppColors.onSurface)
+                            .foregroundStyle(selected == category ? Color(hex: "1A1A1A") : AppColors.tabBarActive)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
                             .background(

@@ -38,7 +38,6 @@ extension Color {
 
 enum AppColors {
 
-    // MARK: - Fixed colors
     static let primary     = Color(hex: "DD1470")
     static let onPrimary   = Color.white
     static let secondary   = Color(hex: "1B93FE")
@@ -52,7 +51,6 @@ enum AppColors {
     static let grey73      = Color(hex: "737373")
     static let lightGreyF0 = Color(hex: "F0F0F0")
 
-    // MARK: - Adaptive colors
     static let surface = Color(uiColor: UIColor { trait in
         trait.userInterfaceStyle == .dark
             ? UIColor(hex: "111111")
@@ -87,7 +85,6 @@ enum AppColors {
         trait.userInterfaceStyle == .dark ? .black : .white
     })
 
-    // MARK: - Tab bar
     static let tabBarActive = primary
     static let tabBarInactive = Color(uiColor: UIColor { trait in
         trait.userInterfaceStyle == .dark

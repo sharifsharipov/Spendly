@@ -1,8 +1,6 @@
 import Foundation
 import SwiftUI
 
-// Shared model — used across Home and Statistics features
-
 enum TransactionType: String, Codable, CaseIterable {
     case income  = "Income"
     case expense = "Expense"

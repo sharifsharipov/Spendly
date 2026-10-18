@@ -5,6 +5,8 @@ import Observation
 final class HomeViewModel {
     var transactions: [Transaction] = []
     var goals: [Goal] = []
+    var selectedCategory: TransactionCategory = .all
+    var showAddTransaction = false
 
     private let fetchTransactions: FetchTransactionsUseCase
     private let addTransaction: AddTransactionUseCase
@@ -36,6 +38,19 @@ final class HomeViewModel {
 
     var activeGoals: [Goal] {
         goals.filter { !$0.isCompleted }.prefix(3).map { $0 }
+    }
+
+    var filteredTransactions: [Transaction] {
+        let sorted = transactions.sorted { $0.date > $1.date }
+        switch selectedCategory {
+        case .all:       return Array(sorted.prefix(5))
+        case .income:    return sorted.filter { $0.type == .income }
+        case .expense:   return sorted.filter { $0.type == .expense }
+        case .food:      return sorted.filter { $0.category == .food }
+        case .transport: return sorted.filter { $0.category == .transport }
+        case .shopping:  return sorted.filter { $0.category == .shopping }
+        case .health:    return sorted.filter { $0.category == .health }
+        }
     }
 
     func load() {

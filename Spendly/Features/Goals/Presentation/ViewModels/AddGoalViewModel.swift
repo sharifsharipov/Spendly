@@ -3,7 +3,6 @@ import Observation
 
 @Observable
 final class AddGoalViewModel {
-
     var title: String = ""
     var targetAmountText: String = ""
     var deadline: Date = Calendar.current.date(byAdding: .month, value: 3, to: .now)!
@@ -26,7 +25,17 @@ final class AddGoalViewModel {
         Double(targetAmountText.replacingOccurrences(of: ",", with: ".")) ?? 0
     }
 
-    func buildGoal() -> Goal {
+    private let addGoal: AddGoalUseCase
+
+    init(repository: GoalRepository = GoalRepositoryImpl()) {
+        addGoal = AddGoalUseCase(repository: repository)
+    }
+
+    func save() {
+        addGoal.execute(buildGoal())
+    }
+
+    private func buildGoal() -> Goal {
         Goal(
             title: title.trimmingCharacters(in: .whitespaces),
             targetAmount: parsedAmount,

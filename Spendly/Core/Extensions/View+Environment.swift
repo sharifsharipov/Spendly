@@ -5,7 +5,6 @@
 
 import SwiftUI
 
-// MARK: - EnvironmentValues: textStyles
 private struct TextStylesKey: EnvironmentKey {
     static let defaultValue = AppTextStyles.light
 }
@@ -17,7 +16,6 @@ extension EnvironmentValues {
     }
 }
 
-// MARK: - Inject textStyles automatically based on colorScheme
 struct TextStylesModifier: ViewModifier {
     @Environment(\.colorScheme) private var colorScheme
 
@@ -33,7 +31,6 @@ extension View {
     }
 }
 
-// MARK: - Toast
 struct ToastMessage: Equatable {
     enum ToastType { case success, failure, info }
     let message: String

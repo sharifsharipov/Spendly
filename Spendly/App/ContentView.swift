@@ -1,17 +1,29 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var homeRouter       = AppRouter()
+    @State private var statsRouter      = AppRouter()
+    @State private var goalsRouter      = AppRouter()
+    @State private var profileRouter    = AppRouter()
+    @AppStorage("appTheme") private var appThemeRaw: String = "system"
 
-    @State private var router = AppRouter()
+    private var preferredScheme: ColorScheme? {
+        switch appThemeRaw {
+        case "light": return .light
+        case "dark":  return .dark
+        default:      return nil
+        }
+    }
 
     init() {
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
         let inactiveColor = UIColor { trait in
-            trait.userInterfaceStyle == .dark ? UIColor.white : UIColor(red: 0.337, green: 0.365, blue: 0.427, alpha: 1)
+            trait.userInterfaceStyle == .dark
+                ? UIColor.white
+                : UIColor(red: 0.337, green: 0.365, blue: 0.427, alpha: 1)
         }
-        let activeColor = UIColor(red: 0.867, green: 0.082, blue: 0.439, alpha: 1) // #DD1470
-
+        let activeColor = UIColor(red: 0.867, green: 0.082, blue: 0.439, alpha: 1)
         appearance.stackedLayoutAppearance.normal.iconColor = inactiveColor
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
             .foregroundColor: inactiveColor,
@@ -28,54 +40,76 @@ struct ContentView: View {
 
     var body: some View {
         TabView {
-            NavigationStack(path: $router.path) {
+            NavigationStack(path: $homeRouter.path) {
                 HomeView()
                     .navigationDestination(for: Route.self) { route in
                         switch route {
                         case .transactionDetail(let tx): TransactionDetailView(transaction: tx)
-                        case .addTransaction:    AddTransactionView()
-                        case .goalDetail:        GoalDetailView()
-                        case .addGoal:           AddGoalView()
-                        case .statisticsDetail:  StatisticsDetailView()
-                        case .editProfile:       EditProfileView()
+                        default: EmptyView()
                         }
                     }
             }
+            .environment(homeRouter)
             .tabItem {
                 Image(AppIcons.home.rawValue)
                 Text("Home")
             }
 
-            NavigationStack {
+            NavigationStack(path: $statsRouter.path) {
                 StatisticsView()
+                    .navigationDestination(for: Route.self) { route in
+                        switch route {
+                        case .statisticsDetail: StatisticsDetailView()
+                        default: EmptyView()
+                        }
+                    }
             }
+            .environment(statsRouter)
             .tabItem {
                 Image(AppIcons.statistics.rawValue)
                 Text("Statistics")
             }
 
-            NavigationStack {
+            NavigationStack(path: $goalsRouter.path) {
                 GoalsView()
+                    .navigationDestination(for: Route.self) { route in
+                        switch route {
+                        case .addGoal:              AddGoalView()
+                        case .goalDetail(let goal): GoalDetailView(goal: goal)
+                        default: EmptyView()
+                        }
+                    }
             }
+            .environment(goalsRouter)
             .tabItem {
                 Image(AppIcons.idea.rawValue)
                 Text("Goals")
             }
 
-            NavigationStack {
+            NavigationStack(path: $profileRouter.path) {
                 ProfileView()
+                    .navigationDestination(for: Route.self) { route in
+                        switch route {
+                        case .editProfile:    EditProfileView()
+                        case .themeView:      ThemeView()
+                        case .languageView:   LanguageView()
+                        case .habitsView:     HabitsView()
+                        default: EmptyView()
+                        }
+                    }
             }
+            .environment(profileRouter)
             .tabItem {
                 Image(AppIcons.profile.rawValue)
                 Text("Profile")
             }
         }
-        .environment(router)
+        .preferredColorScheme(preferredScheme)
+        .environment(AppLocalizer.shared)
         .injectTextStyles()
     }
 }
 
 #Preview {
     ContentView()
-        .injectTextStyles()
 }

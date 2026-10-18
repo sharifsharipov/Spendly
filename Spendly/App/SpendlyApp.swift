@@ -13,6 +13,7 @@ struct SpendlyApp: App {
 
     init() {
         registerFonts()
+        UISwitch.appearance().onTintColor = UIColor(AppColors.success)
     }
 
     var body: some Scene {
